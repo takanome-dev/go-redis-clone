@@ -15,7 +15,7 @@ func main() {
 	}
 
 	defer l.Close()
-	log.Printf("server listening at localhost %s", l.Addr())
+	log.Printf("server listening at localhost %s\n", l.Addr())
 
 	conn, err := l.Accept()
 	if err != nil {
@@ -23,15 +23,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	buff := make([]byte, 1024)
+	defer conn.Close()
+	
 	for {
+		buff := make([]byte, 512)
 		n, err := conn.Read(buff)
 		if err != nil {
-			fmt.Printf("error reading from connection: %v", err.Error())
+			fmt.Printf("error reading from connection: %v\n", err.Error())
 			return
 		}
 
-		fmt.Printf("Received: %s", string(buff[:n]))
-		conn.Write([]byte("+PONG\r\n"))
+		fmt.Printf("Received: %s\n", string(buff[:n]))
+		_, err = conn.Write([]byte("+PONG\r\n"))
+		if err != nil {
+			fmt.Printf("error writing to connection: %v\n", err.Error())
+			return
+		}
 	}
 }
